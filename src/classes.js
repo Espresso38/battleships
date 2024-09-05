@@ -13,8 +13,65 @@ class Ship {
     }
 
     isSunk() {
-        this.sunk = true;
+        this.sunk = this.nHits === this.length;
+        return this.sunk;
+    }
+};
+
+class GameBoard {
+    constructor(size = 10) {
+        this.size = size;
+        this.grid = Array.from({length: size}, () => Array(size).fill(null));
+        this.ships = []
+    }
+
+    placeShip(ship, xAxis, yAxis, direction) {
+        if (!this.isPlaceValid(ship, xAxis, yAxis, direction)) {
+            throw new Error('Invalid ship placement');
+        }
+
+        for (let i = 0; i < ship.length; i++) {
+            if (direction === 'horizontal') {
+                this.grid[xAxis][yAxis + i] = ship;
+            } else {
+                this.grid[xAxis + i][yAxis] = ship;
+            }
+        }
+        this.ships.push(ship);
+    }
+
+    isPlaceValid(ship, xAxis, yAxis, direction) {
+        for (let i = 0; i < ship.length; i++) {
+            if (direction === 'horizontal') {
+                if (yAxis + i > this.size || this.grid[xAxis][yAxis + i] !== null) {
+                    return false;
+                }
+            } else {
+                if (xAxis + i > this.size || this.grid[xAxis + i][yAxis] !== null) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    recivedAttack(xAxis, yAxis) {
+        const target = this.grid[xAxis][yAxis];
+
+        if (target === null) {
+            this.grid[xAxis][yAxis] = 'O';
+        } else if (target !== 'O' && target !== 'X') {
+            target.hit();
+            this.grid[xAxis][yAxis] = 'X';
+            if (target.isSunk()) {
+                this.allShipsSunk();
+            }
+        }
+    }
+
+    allShipsSunk() {
+        return this.ships.every(ship => ship.isSunk());
     }
 }
 
-module.exports = Ship;
+module.exports = {Ship, GameBoard};
