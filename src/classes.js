@@ -74,4 +74,23 @@ class GameBoard {
     }
 }
 
-module.exports = {Ship, GameBoard};
+class Player {
+    constructor(name) {
+        this.name = name;
+        this.playerGameBoard = new GameBoard();
+    }
+
+    placeShip(ship, xAxis, yAxis, direction) {
+        try {
+            this.playerGameBoard.placeShip(ship, xAxis, yAxis, direction);
+        } catch (error) {
+            throw new Error(error);
+        }
+    }
+
+    attack(opponentGameBoard, xAxis, yAxis) {
+        opponentGameBoard.recivedAttack(xAxis, yAxis);
+    }
+}
+
+module.exports = {Ship, GameBoard, Player};

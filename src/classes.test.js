@@ -1,4 +1,4 @@
-const {Ship, GameBoard} = require('./classes');  
+const {Ship, GameBoard, Player} = require('./classes');  
 
 describe('Ship', () => {
     test('hit() increments nHits', () => {
@@ -111,5 +111,60 @@ describe('Gameboard', () => {
         gameboard.recivedAttack(2, 0);
 
         expect(gameboard.allShipsSunk()).toBe(false);
+    });
+});
+
+describe('Player', () => {
+    let player1;
+    let player2;
+    let ship1;
+    let ship2;
+
+    beforeEach(() => {
+        player1 = new Player('Alice');
+        player2 = new Player('Bob');
+        ship1 = new Ship(3);
+        ship2 = new Ship(4);
+    });
+
+    test('should initialize player with a name and a game board', () => {
+        expect(player1.name).toBe('Alice');
+        expect(player1.playerGameBoard).toBeInstanceOf(GameBoard);
+    });
+
+    test('should place ships correctly on the player\'s board', () => {
+        player1.placeShip(ship1, 0, 0, 'horizontal');
+
+        expect(player1.playerGameBoard.grid[0][0]).toBe(ship1);
+        expect(player1.playerGameBoard.grid[0][1]).toBe(ship1);
+        expect(player1.playerGameBoard.grid[0][2]).toBe(ship1);
+    });
+
+    test('should not place ships when placement is invalid', () => {
+        expect(() => player1.placeShip(ship1, 0, 8, 'horizontal')).toThrow('Invalid ship placement');
+
+        player1.placeShip(ship1, 0, 0, 'horizontal');
+        expect(() => player1.placeShip(ship1, 0, 1, 'vertical')).toThrow('Invalid ship placement');
+    });
+
+    test('should attack the opponent\'s board and record a hit', () => {
+        player2.placeShip(ship2, 1, 0, 'vertical');
+
+        player1.attack(player2.playerGameBoard, 1, 0);
+        expect(player2.playerGameBoard.grid[1][0]).toBe('X');
+        expect(ship2.nHits).toBe(1);
+    });
+
+    test('should attack the opponent\'s board and record a miss', () => {
+        player1.attack(player2.playerGameBoard, 0, 0);
+        expect(player2.playerGameBoard.grid[0][0]).toBe('O');
+    });
+
+    test('should not allow repeated attacks on the same spot', () => {
+        player1.attack(player2.playerGameBoard, 0, 0);
+        expect(player2.playerGameBoard.grid[0][0]).toBe('O');
+
+        player1.attack(player2.playerGameBoard, 0, 0);
+        expect(player2.playerGameBoard.grid[0][0]).toBe('O');
     });
 });
